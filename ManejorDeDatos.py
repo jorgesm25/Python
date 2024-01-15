@@ -205,4 +205,3 @@ codigo_html += "</tbody>\n</table>"
 with open("tablapyhton.html", "w") as f:
     f.write(codigo_html)
 
-

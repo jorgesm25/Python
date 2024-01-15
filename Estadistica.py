@@ -307,4 +307,3 @@ statistic_ttest, p_value_ttest = ttest_1samp(df['Femenino'], 0.50)
 print(f"Prueba de Wilcoxon - Estadístico: {statistic_wilcoxon}, Valor p: {p_value_wilcoxon}")
 print(f"Prueba t de una muestra - Estadístico: {statistic_ttest}, Valor p: {p_value_ttest}")
 
-

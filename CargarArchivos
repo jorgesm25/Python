@@ -85,6 +85,86 @@ print(json_object)
 # Imprime el tipo de dato del objeto cargado (normalmente será un diccionario)
 print(type(json_object))  
 
+
+################### Extraer json 
+!pip install yfinance #esta biblioteca convierte automaticamente de json a un df
+!pip install pandas
+!pip install matplotlib
+
+import yfinance as yf
+import pandas as pd
+import matplotlib_inline
+#descarga informacion de los valores de la empresa como el historico de precios en un df
+apple = yf.Ticker("AAPL") #para acceder a datos y funciones de apple
+
+##descarga un archivo json con informacion especifica con informacion de la empresa como sector, pais etc  como diccionario
+!wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/data/apple.json
+
+import json  # Importa la biblioteca json para trabajar con datos en formato JSON.
+
+# Abre el archivo 'apple.json' en modo lectura.
+with open('apple.json') as json_file:
+    # Carga el contenido del archivo JSON en la variable 'apple_info'.
+    apple_info = json.load(json_file)
+    
+    # La siguiente línea está comentada. Si se descomenta, imprime el tipo de datos de 'apple_info'.
+    # print("Type:", type(apple_info))
+
+# Muestra el contenido de 'apple_info'.
+apple_info
+#apartir de ahora se trabaja con apple_info como si fuera un dataframe
+################################## Llenar una dfs con el contenido de una tabla html recorriendo sus celdas
+
+!pip install pandas
+!pip install requests
+!pip install bs4
+!pip install html5lib
+!pip install lxml
+!pip install plotly
+
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# Define la URL de la página web que contiene los datos de las acciones.
+url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/labs/project/amazon_data_webpage.html"
+
+# Realiza una solicitud GET a la URL para obtener el contenido HTML de la página.
+html_data = requests.get(url).text
+
+# Crea un objeto BeautifulSoup a partir del HTML descargado utilizando el analizador 'html.parser'.
+soup = BeautifulSoup(html_data, 'html.parser')
+
+# Extrae el contenido del título de la página web.
+soup.title.string
+
+# Crea un DataFrame vacío con las columnas necesarias para almacenar los datos de la tabla.
+amazon_data = pd.DataFrame(columns=["Date", "Open", "High", "Low", "Close", "Adj Close", "Volume"])
+
+# Recorre cada fila de la tabla en el HTML.
+for row in soup.find("tbody").find_all("tr"):
+    # Encuentra todas las celdas en la fila actual.
+    col = row.find_all("td")
+    
+    # Extrae el texto de cada celda.
+    date = col[0].text
+    Open = col[1].text
+    high = col[2].text
+    low = col[3].text
+    close = col[4].text
+    adj_close = col[5].text
+    volume = col[6].text
+
+    # Crea un DataFrame para la fila actual y concatena con el DataFrame principal.
+amazon_data = pd.concat([amazon_data, pd.DataFrame({"Date":[date], "Open":[Open], "High":[high], "Low":[low], "Close":[close], "Adj Close":[adj_close], "Volume":[volume]})], ignore_index=True)
+
+# Imprime el valor de la columna 'Open' en la última fila del DataFrame.
+amazon_data["Open"].iloc[-1]
+
 ######################### Cargar archivos XML 
 
 import pandas as pd 
@@ -120,3 +200,4 @@ for node in root:
 
 # Mostrar el DataFrame resultante con la información del archivo XML
 datatframe
+

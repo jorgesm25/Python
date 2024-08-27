@@ -1,0 +1,211 @@
+#NOTA para todos los codigos siempre es necesario  cerrar las conexiones a la base de datos 
+################## En este tutorial, creó una base de datos y una tabla en un cuaderno de Python usando SQLite3. Luego creó una tabla e insertó algunas filas de datos en ella. Luego consultó los datos. También recuperó los datos en un marco de datos de pandas.
+
+# Importa la librería sqlite3 para trabajar con bases de datos SQLite
+import sqlite3
+
+# Conecta a la base de datos SQLite llamada 'INSTRUCTOR.db'.
+# Si la base de datos no existe, se crea automáticamente en el directorio actual.
+conn = sqlite3.connect('INSTRUCTOR.db')
+
+# Crea un objeto cursor para ejecutar comandos SQL en la base de datos.
+cursor_obj = conn.cursor()
+
+# Elimina la tabla 'INSTRUCTOR' si ya existe en la base de datos.
+cursor_obj.execute("DROP TABLE IF EXISTS INSTRUCTOR")
+
+# Crea la tabla 'INSTRUCTOR' si no existe.
+# La tabla tiene cinco columnas: ID, FNAME, LNAME, CITY y CCODE.
+# La columna ID es la clave primaria y no puede ser nula.
+table = """ 
+CREATE TABLE IF NOT EXISTS INSTRUCTOR(
+    ID INTEGER PRIMARY KEY NOT NULL, 
+    FNAME VARCHAR(20), 
+    LNAME VARCHAR(20), 
+    CITY VARCHAR(20), 
+    CCODE CHAR(2)
+);
+"""
+cursor_obj.execute(table)
+
+print("La tabla está lista")
+
+# Inserta una fila en la tabla 'INSTRUCTOR'.
+cursor_obj.execute('''INSERT INTO INSTRUCTOR VALUES (1, 'Rav', 'Ahuja', 'TORONTO', 'CA')''')
+
+# Inserta varias filas en la tabla 'INSTRUCTOR'.
+cursor_obj.execute('''INSERT INTO INSTRUCTOR VALUES 
+(2, 'Raul', 'Chong', 'Markham', 'CA'), 
+(3, 'Hima', 'Vasudevan', 'Chicago', 'US')''')
+
+# Consulta todos los datos de la tabla 'INSTRUCTOR'.
+statement = '''SELECT * FROM INSTRUCTOR'''
+cursor_obj.execute(statement)
+
+# Muestra todos los datos obtenidos de la consulta.
+print("Todos los datos:")
+output_all = cursor_obj.fetchall()
+for row_all in output_all:
+    print(row_all)
+
+# Consulta y muestra solo algunas filas de la tabla 'INSTRUCTOR'.
+statement = '''SELECT * FROM INSTRUCTOR'''
+cursor_obj.execute(statement)
+
+print("Algunos datos:")
+# fetchmany(2) obtiene las primeras dos filas de la tabla.
+output_many = cursor_obj.fetchmany(2)
+for row_many in output_many:
+    print(row_many)
+
+# Consulta y muestra solo la columna FNAME de la tabla 'INSTRUCTOR'.
+statement = '''SELECT FNAME FROM INSTRUCTOR'''
+cursor_obj.execute(statement)
+
+print("Nombres:")
+output_column = cursor_obj.fetchall()
+for fetch in output_column:
+    print(fetch)
+
+# Actualiza la ciudad (CITY) de la fila donde FNAME es 'Rav' a 'MOOSETOWN'.
+query_update = '''UPDATE INSTRUCTOR SET CITY='MOOSETOWN' WHERE FNAME="Rav"'''
+cursor_obj.execute(query_update)
+
+# Vuelve a consultar y mostrar algunas filas de la tabla 'INSTRUCTOR' para ver los cambios.
+statement = '''SELECT * FROM INSTRUCTOR'''
+cursor_obj.execute(statement)
+
+print("Datos actualizados:")
+output1 = cursor_obj.fetchmany(2)
+for row in output1:
+    print(row)
+
+# Importa la librería pandas para trabajar con dataframes.
+import pandas as pd
+
+# Recupera los resultados de la consulta en un dataframe de pandas.
+df = pd.read_sql_query("SELECT * FROM INSTRUCTOR;", conn)
+
+# Imprime el dataframe completo.
+df
+
+# Imprime solo la columna LNAME de la primera fila en el dataframe.
+df.LNAME[0]
+
+# Imprime las dimensiones del dataframe (filas, columnas).
+df.shape
+
+# Cierra la conexión a la base de datos.
+conn.close()
+
+#################################################### SQL MAGIC: para escribir codigo sql en python (jupyter notebook)
+#Para escribir en toda la celda con sql usamos una cell magic %%sql, para una sola linea %sql
+# Cargar la extensión SQL para el uso de magia SQL en Jupyter Notebook
+%load_ext sql
+
+# Importar las librerías necesarias
+import csv, sqlite3
+
+# Conectar a la base de datos SQLite
+con = sqlite3.connect("SQLiteMagic.db")
+cur = con.cursor()
+
+# Cargar la extensión SQL para conectar a la base de datos SQLite
+%load_ext sql
+
+# Conectar a la base de datos SQLite usando la extensión SQL
+%sql sqlite:///SQLiteMagic.db
+
+# Crear una tabla en la base de datos con datos de puntuaciones de pruebas de estudiantes internacionales
+%%sql
+CREATE TABLE INTERNATIONAL_STUDENT_TEST_SCORES (
+    country VARCHAR(50),
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    test_score INT
+);
+
+# Insertar datos en la tabla creada
+INSERT INTO INTERNATIONAL_STUDENT_TEST_SCORES (country, first_name, last_name, test_score)
+VALUES
+('United States', 'Marshall', 'Bernadot', 54),
+('Ghana', 'Celinda', 'Malkin', 51),
+('Ukraine', 'Guillermo', 'Furze', 53),
+-- (Se han omitido los datos intermedios por brevedad)
+('Australia', 'Eduard', 'Leipelt', 53);
+
+# Definir la variable del país que se desea consultar
+country = "Canada"
+
+# Consultar la tabla para obtener todos los registros del país especificado
+%sql select * from INTERNATIONAL_STUDENT_TEST_SCORES where country = :country
+
+# Obtener la distribución de las puntuaciones de las pruebas agrupadas por la puntuación
+test_score_distribution = %sql SELECT test_score as "Test_Score", count(*) as "Frequency" from INTERNATIONAL_STUDENT_TEST_SCORES GROUP BY test_score;
+test_score_distribution
+
+# Convertir el resultado de la consulta en un DataFrame de pandas
+dataframe = test_score_distribution.DataFrame()
+
+# Importar la librería para visualización
+%matplotlib inline
+# Descomentar la siguiente línea si se obtiene un error de módulo indicando que seaborn no está encontrado
+# !pip install seaborn==0.9.0
+import seaborn
+
+# Crear un gráfico de barras para la distribución de las puntuaciones
+plot = seaborn.barplot(x='Test_Score',y='Frequency', data=dataframe)
+
+# Realizar una consulta adicional para experimentar con el conjunto de datos
+%%sql 
+SELECT country, first_name, last_name, test_score FROM INTERNATIONAL_STUDENT_TEST_SCORES;
+
+################# HTML, BASH, JAVASCRIPT magic commands
+# Ejecutar código HTML en una celda
+%%html
+<h1>Hola, mundo!</h1>
+
+# Ejecutar comandos de bash en una celda
+%%bash
+echo "Hola desde bash"
+ls -la
+
+# Ejecutar código JavaScript en una celda
+%%javascript
+console.log("Hola desde JavaScript");
+
+# Ejecutar código R en una celda (requiere kernel de R)
+%%R
+summary(cars)
+###################################################################################################
+# Subir un dataframe desde python a una base SQL 
+# Cargar la extensión SQL para el uso de comandos SQL en el notebook
+%load_ext sql
+
+# Importar las librerías necesarias
+import csv, sqlite3
+
+# Conectar a la base de datos SQLite llamada 'socioeconomic.db'
+con = sqlite3.connect("socioeconomic.db")
+
+# Crear un cursor para ejecutar comandos SQL en la base de datos
+cur = con.cursor()
+
+# Instalar la versión 1.1.5 de la librería pandas (sin mostrar el proceso de instalación)
+!pip install -q pandas==1.1.5
+
+# Conectar a la base de datos SQLite usando la extensión SQL del notebook
+%sql sqlite:///socioeconomic.db
+
+# Importar la librería pandas
+import pandas
+
+# Leer datos desde un archivo CSV en una URL y cargarlo en un DataFrame de pandas
+df = pandas.read_csv('https://data.cityofchicago.org/resource/jcxq-k9xf.csv')
+
+# Guardar los datos del DataFrame en una tabla llamada 'chicago_socioeconomic_data' en la base de datos
+# Si la tabla ya existe, se reemplaza. No se guarda el índice del DataFrame y los datos se insertan en múltiples paquetes para mejorar el rendimiento.
+df.to_sql("chicago_socioeconomic_data", con, if_exists='replace', index=False, method="multi")
+
+# Ejecutar una consulta SQL para obtener los primeros 5 registros de la tabla 'chicago_socioeconomic_data'
+%sql SELECT * FROM chicago_socioeconomic_data limit 5;

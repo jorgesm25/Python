@@ -209,3 +209,40 @@ df.to_sql("chicago_socioeconomic_data", con, if_exists='replace', index=False, m
 
 # Ejecutar una consulta SQL para obtener los primeros 5 registros de la tabla 'chicago_socioeconomic_data'
 %sql SELECT * FROM chicago_socioeconomic_data limit 5;
+
+#################################################################################################################
+# Importa los módulos necesarios: csv para manejar archivos CSV y sqlite3 para interactuar con bases de datos SQLite
+import csv, sqlite3
+
+# Establece una conexión con la base de datos SQLite llamada "RealWorldData.db"
+con = sqlite3.connect("RealWorldData.db")
+cur = con.cursor()  # Crea un cursor para ejecutar comandos SQL
+
+# Instala la versión 1.1.5 de la biblioteca pandas de forma silenciosa
+!pip install -q pandas==1.1.5
+
+# Carga la extensión SQL para usar comandos mágicos en Jupyter Notebook
+%load_ext sql
+
+# Establece una conexión con la base de datos SQLite "RealWorldData.db" para ejecutar comandos SQL en Jupyter Notebook
+%sql sqlite:///RealWorldData.db
+
+# Importa la biblioteca pandas
+import pandas
+
+# Lee un archivo CSV desde una URL y lo almacena en un DataFrame
+df = pandas.read_csv("https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DB0201EN-SkillsNetwork/labs/FinalModule_Coursera_V5/data/ChicagoPublicSchools.csv")
+
+# Almacena el DataFrame en una tabla llamada "CHICAGO_PUBLIC_SCHOOLS_DATA" en la base de datos SQLite
+# Si la tabla ya existe, la reemplaza. No incluye el índice en la tabla
+df.to_sql("CHICAGO_PUBLIC_SCHOOLS_DATA", con, if_exists='replace', index=False, method="multi")
+
+# Consulta para listar los nombres de todas las tablas en la base de datos SQLite
+%sql SELECT name FROM sqlite_master WHERE type='table'
+
+# Consulta para contar el número de columnas en la tabla "CHICAGO_PUBLIC_SCHOOLS_DATA"
+%sql SELECT count(name) FROM PRAGMA_TABLE_INFO('CHICAGO_PUBLIC_SCHOOLS_DATA')
+
+# Consulta para obtener información sobre las columnas de la tabla "CHICAGO_PUBLIC_SCHOOLS_DATA"
+# Muestra el nombre, tipo y longitud del tipo de cada columna
+%sql SELECT name,type,length(type) FROM PRAGMA_TABLE_INFO('CHICAGO_PUBLIC_SCHOOLS_DATA');

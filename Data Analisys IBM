@@ -69,3 +69,124 @@ for param in ['RAM_GB','CPU_frequency','Storage_GB_SSD','Screen_Size_inch','Weig
     pearson_coef, p_value = stats.pearsonr(df[param], df['Price'])
     print(param)
     print("The Pearson Correlation Coefficient for ",param," is", pearson_coef, " with a P-value of P =", p_value)
+
+################################################################################
+#                           MODELS
+################################################################################
+from sklearn.linear_model import LinearRegression
+
+#Inicializamos un objeto de regresión
+lm = LinearRegression()
+
+# Definimos la variable independiente X como la columna 'highway-mpg' del DataFrame.
+X = df[['highway-mpg']]
+
+# Definimos la variable dependiente Y como la columna 'price' del DataFrame.
+Y = df['price']
+
+# Ajustamos el modelo de regresión lineal utilizando las variables X (independiente) y Y (dependiente).
+lm.fit(X, Y)
+
+# Realizamos predicciones sobre los valores de X utilizando el modelo ajustado y almacenamos los resultados en Yhat.
+Yhat = lm.predict(X)
+
+# Mostramos las primeras 5 predicciones.
+Yhat[0:5]   
+
+# Obtenemos el valor del intercepto (ordenada al origen) del modelo de regresión lineal.
+lm.intercept_ #:38423.31
+
+# Obtenemos el coeficiente (pendiente) de la variable independiente 'highway-mpg' en el modelo de regresión.
+lm.coef_ #:- 821.73
+
+# Sustituyendo los valores reales en la ecuación del modelo, obtenemos la siguiente relación:
+# Precio = 38423.31 - 821.73 x highway-mpg
+
+#------------------------------- Regression simple plot -------------------------------
+# Importamos el paquete de visualización seaborn, que es útil para crear gráficos estadísticos.
+import seaborn as sns
+
+# Este comando permite que los gráficos se muestren directamente en el notebook.
+%matplotlib inline 
+
+# Definimos el tamaño de la figura que se va a crear, con un ancho de 12 y una altura de 10.
+width = 12
+height = 10
+plt.figure(figsize=(width, height))
+
+# Creamos un gráfico de regresión utilizando seaborn. En el eje x se coloca 'highway-mpg' y en el eje y 'price'.
+# Los datos provienen del DataFrame df.
+sns.regplot(x="highway-mpg", y="price", data=df)
+
+# Ajustamos el límite inferior del eje y a 0 para asegurar que no haya valores negativos en el gráfico.
+plt.ylim(0,)
+#medimos la correlación entre las variables
+df[["peak-rpm","highway-mpg"]].corr()
+#Para mediar con dos o más variables 
+df[["highway-mpg", "column2", "price"]].corr() #devuelve una matriz
+#------------------------------------------------ Gráfico de residuos--------------------------
+# Gráfico de residuos: si los puntos en un gráfico de residuos están dispersos aleatoriamente alrededor del eje x,
+# entonces un modelo lineal es adecuado para los datos. Si hay un patrón, como un aumento de los datos conforme a x
+# o una curva, el modelo no se ajusta correctamente.
+
+# Definimos el tamaño de la figura que se va a crear, con un ancho de 12 y una altura de 10.
+width = 12
+height = 10
+plt.figure(figsize=(width, height))
+
+# Creamos un gráfico de residuos utilizando seaborn, donde el eje x es 'highway-mpg' y el eje y es 'price'.
+sns.residplot(x=df['highway-mpg'], y=df['price'])
+
+# Mostramos el gráfico.
+plt.show()
+#--------------------------------------- REGRESSION LINEAL MULTIPLE-----------------
+#Inicializamos un objeto de regresión
+lm = LinearRegression()
+
+# Definimos la variable independiente Z como un DataFrame que contiene varias características:
+# 'horsepower', 'curb-weight', 'engine-size' y 'highway-mpg'.
+Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+
+# Ajustamos el modelo de regresión lineal utilizando las variables en Z (independientes) para predecir 'price' (dependiente).
+lm.fit(Z, df['price'])
+
+# Obtenemos el valor del intercepto (ordenada al origen) del modelo de regresión lineal.
+lm.intercept_ #: -15806.62462632922
+
+# Obtenemos los coeficientes de las variables independientes en Z.
+lm.coef_ #: [53.49574423,  4.70770099, 81.53026382, 36.05748882])
+
+#La ecuación final es: Price = -15678.742628061467 + 52.65851272 x horsepower + 4.69878948 x curb-weight + 81.95906216 x engine-size + 33.58258185 x highway-mpg
+
+#------------------------------------- Distribution plot for RLM ---------------------
+# Para regresión lineal múltiple (MLR) no se puede visualizar el modelo con un gráfico de regresión o de residuos.
+# En su lugar, comparamos los valores reales con los valores ajustados utilizando un gráfico de distribución.
+
+# Realizamos predicciones utilizando el modelo ajustado con las variables en Z.
+Y_hat = lm.predict(Z)
+
+# Definimos el tamaño de la figura que se va a crear, con un ancho y altura definidos previamente.
+plt.figure(figsize=(width, height))
+
+# Creamos un gráfico de distribución para los valores reales de 'price'.
+# Se utiliza 'hist=False' para que no se muestre el histograma, y se especifica el color rojo (r) para la línea.
+ax1 = sns.distplot(df['price'], hist=False, color="r", label="Actual Value")
+
+# Añadimos al mismo gráfico una línea para los valores ajustados (predicciones) de 'price'.
+# También se omite el histograma y se utiliza el color azul (b) para la línea. La gráfica se superpone en ax1.
+sns.distplot(Y_hat, hist=False, color="b", label="Fitted Values", ax=ax1)
+
+# Añadimos un título al gráfico.
+plt.title('Valores Reales vs Ajustados para el Precio')
+
+# Etiquetamos el eje x como "Precio (en dólares)".
+plt.xlabel('Precio (en dólares)')
+
+# Etiquetamos el eje y como "Proporción de Autos".
+plt.ylabel('Proporción de Autos')
+
+# Mostramos el gráfico.
+plt.show()
+
+# Cerramos la figura para liberar memoria y evitar sobrecargas si se crean múltiples gráficos después.
+plt.close()

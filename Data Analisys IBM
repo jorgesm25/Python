@@ -1,0 +1,71 @@
+import piplite
+await piplite.install('seaborn')
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+%matplotlib inline
+
+#------------------------------------------GRAFICAR RELACIONES LINEALES---------------------------------
+sns.regplot(x="CPU_frequency", y="Price", data=df)
+plt.ylim(0,) #Estable el limite inferior del eje y en 0, superior libre
+
+#--------------------------------------------Calcular correlacion---------------------
+df[['peak-rpm','price']].corr()
+
+# Correlacion para más variables
+for param in ["CPU_frequency", "Screen_Size_inch","Weight_pounds"]:
+    print(f"Correlation of Price and {param} is ", df[[param,"Price"]].corr())
+#-------------------------------------------BOXPLOT-------------------------------
+sns.boxplot(x="Category", y="Price", data=df)
+#--------------------------------------------RESUMEN ESTADISTICO DEL DF--------------
+df.describe(include="all") #incluye las variables categoricas
+#-------------------------------------------AGRUPAR Y PIVOTEAR PARA MAPA DE CALOR-----------------
+# Selecciona las columnas "GPU", "CPU_core" y "Price" del DataFrame original y crea un nuevo DataFrame 'df_group'.
+df_group = df[["GPU", "CPU_core", "Price"]]
+
+# Agrupa el DataFrame 'df_group' por las columnas "GPU" y "CPU_core", calculando la media de "Price" para cada combinación.
+# 'as_index=False' asegura que las columnas "GPU" y "CPU_core" no se usen como índice en el resultado.
+df_grouped = df_group.groupby(["GPU", "CPU_core"], as_index=False).mean()
+
+# Muestra el DataFrame agrupado.
+df_grouped
+
+# Crea una tabla pivote donde "GPU" es el índice, "CPU_core" son las columnas, y los valores son las medias de "Price".
+grouped_pivot = df_grouped.pivot(index="GPU", columns="CPU_core")
+
+# Muestra la tabla pivote.
+grouped_pivot
+
+# Crea una figura y un eje para la visualización.
+fig, ax = plt.subplots()
+
+# Crea un mapa de calor (heatmap) utilizando el DataFrame pivote y la paleta de colores 'RdBu'.
+im = ax.pcolor(grouped_pivot, cmap='RdBu')
+
+# Define los nombres de las etiquetas para las filas y columnas.
+row_labels = grouped_pivot.columns.levels[1]  # Nombres de las columnas, que representan los núcleos de la CPU.
+col_labels = grouped_pivot.index              # Nombres de las filas, que representan los tipos de GPU.
+
+# Mueve las marcas (ticks) y etiquetas al centro de cada celda.
+ax.set_xticks(np.arange(grouped_pivot.shape[1]) + 0.5, minor=False)
+ax.set_yticks(np.arange(grouped_pivot.shape[0]) + 0.5, minor=False)
+
+# Inserta las etiquetas de las columnas (CPU cores) y las filas (GPU).
+ax.set_xticklabels(row_labels, minor=False)
+ax.set_yticklabels(col_labels, minor=False)
+
+# Añade una barra de color a la figura para indicar la escala de valores.
+fig.colorbar(im)
+#----------------------------------------EVALUAR CORRELACCION CON PEARSON Y P VALUE------------
+#Para una variable 
+pearson_coef, p_value = stats.pearsonr(df['wheel-base'], df['price'])
+print("The Pearson Correlation Coefficient is", pearson_coef, " with a P-value of P =", p_value)  
+
+#Para 2 o más variables
+for param in ['RAM_GB','CPU_frequency','Storage_GB_SSD','Screen_Size_inch','Weight_pounds','CPU_core','OS','GPU','Category']:
+    pearson_coef, p_value = stats.pearsonr(df[param], df['Price'])
+    print(param)
+    print("The Pearson Correlation Coefficient for ",param," is", pearson_coef, " with a P-value of P =", p_value)

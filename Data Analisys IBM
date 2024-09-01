@@ -190,3 +190,210 @@ plt.show()
 
 # Cerramos la figura para liberar memoria y evitar sobrecargas si se crean múltiples gráficos después.
 plt.close()
+
+
+#---------------------------------- POLINOMIAL REGRESION SIMPLE------------------
+#Creamos una funcion para graficar modelos polinómicos de una sola variable
+def PlotPolly(model, independent_variable, dependent_variabble, Name):
+    # Generamos 100 puntos nuevos igualmente espaciados para la variable independiente en el rango de 15 a 55.
+    x_new = np.linspace(15, 55, 100)
+    # Calculamos los valores correspondientes de la variable dependiente utilizando el modelo polinómico.
+    y_new = model(x_new)
+    # Graficamos los puntos originales (variable independiente vs. variable dependiente) como puntos '.'.
+    # Luego, graficamos la curva del modelo ajustado utilizando una línea '-'.
+    plt.plot(independent_variable, dependent_variabble, '.', x_new, y_new, '-')
+    # Establecemos el título de la gráfica.
+    plt.title('Ajuste Polinómico con Matplotlib para Precio ~ Longitud')
+    # Configuramos el color de fondo del gráfico.
+    ax = plt.gca()
+    ax.set_facecolor((0.898, 0.898, 0.898))
+    # Obtenemos la figura actual para realizar configuraciones adicionales si es necesario.
+    fig = plt.gcf()
+    # Etiquetamos el eje x con el nombre de la variable independiente.
+    plt.xlabel(Name)
+    # Etiquetamos el eje y con "Price of Cars" (Precio de Autos).
+    plt.ylabel('Price of Cars')
+    # Mostramos el gráfico en pantalla.
+    plt.show()
+    # Cerramos la figura para liberar memoria y evitar sobrecargas si se crean múltiples gráficos después.
+    plt.close()
+
+# Definimos la variable independiente x y dependiente y
+x = df['highway-mpg']
+y = df['price']
+
+# Ajustamos un modelo polinómico de tercer grado (cúbico) utilizando las variables x e y.
+f = np.polyfit(x, y, 3)
+
+# Creamos un objeto polinómico a partir de los coeficientes obtenidos.
+p = np.poly1d(f)
+
+# Mostramos en pantalla la ecuación del polinomio ajustado.
+print(p)
+
+# Resultado de ejemplo:
+# -1.557 x^3 + 204.8 x^2 - 8965 x + 1.379e+05
+
+# Llamamos a la función PlotPolly para graficar el ajuste polinómico.
+PlotPolly(p, x, y, 'highway-mpg')
+
+# Si llamamos a np.polyfit nuevamente, obtenemos el array de coeficientes del polinomio de tercer grado.
+np.polyfit(x, y, 3)
+# Salida de ejemplo:
+# array([-1.55663829e+00,  2.04754306e+02, -8.96543312e+03,  1.37923594e+05])
+#------------------------------ Transformación polinomica con multiples caracteristicas
+# Selección de características del DataFrame
+Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+
+# Importación de PolynomialFeatures para generar características polinómicas
+from sklearn.preprocessing import PolynomialFeatures
+
+# Creación del transformador para polinomios de grado 2
+pr = PolynomialFeatures(degree=2)
+
+# Aplicación de la transformación polinómica a Z
+Z_pr = pr.fit_transform(Z)
+
+# Mostrar la forma original de Z
+Z.shape #:4, 4 variables orignales
+
+# Mostrar la forma de Z después de la transformación polinómica
+Z_pr.shape # 15, 1 intercepto, 4 originales, las 4 originales^2, la multiplicacion de las 4 entre si mismas
+#-------------------------------------------------PIPELINE-----------------------------------
+#Realiza lo mismo que el anterior solo de forma más automatica y acortada
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+
+# Definición de la pipeline con escalado, características polinómicas y modelo de regresión
+Input = [
+    ('scale', StandardScaler()),                # Escalado de características para tener media 0 y desviación estándar 1
+    ('polynomial', PolynomialFeatures(include_bias=False)),  # Generación de características polinómicas de grado 2 sin término de sesgo
+    ('model', LinearRegression())               # Ajuste del modelo de regresión lineal
+]
+
+# Creación de la pipeline con las etapas definidas
+pipe = Pipeline(Input)
+pipe
+
+# Selección de las características del DataFrame
+Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+
+# Conversión de Z a tipo float para asegurar compatibilidad con el procesamiento
+Z = Z.astype(float)
+
+# Ajuste de la pipeline a los datos de características Z y variable dependiente y
+pipe.fit(Z, y)
+
+# Predicción de los valores utilizando el modelo ajustado
+ypipe = pipe.predict(Z)
+
+# Muestra de las primeras 4 predicciones realizadas por el modelo
+ypipe[0:4]
+
+# Resultado esperado de las primeras 4 predicciones (ejemplo):
+# array([13102.74784201, 13102.74784201, 18225.54572197, 10390.29636555])
+# ----------------Evaluacion de egresión lineal simple--------------
+lm.fit(X, Y)
+
+# Cálculo del coeficiente de determinación R^2
+print('El R-cuadrado es: ', lm.score(X, Y))
+# El R-cuadrado es:  0.4965911884339176 
+# Esto significa que aproximadamente el 49.659% de la variación del precio está explicado por este modelo de regresión lineal simple "horsepower_fit".
+
+# Predicción de los valores utilizando el modelo ajustado
+Yhat = lm.predict(X)
+
+# Muestra de los primeros 4 valores predichos
+print('El output de los primeros cuatro valores predichos es: ', Yhat[0:4])
+# El output de los primeros cuatro valores predichos es:  [16236.50464347 16236.50464347 17058.23802179 13771.3045085]
+
+from sklearn.metrics import mean_squared_error
+
+# Cálculo del error cuadrático medio (MSE) entre los valores reales y los valores predichos
+mse = mean_squared_error(df['price'], Yhat)
+
+# Muestra del error cuadrático medio
+print('El error cuadrático medio entre el precio y el valor predicho es: ', mse)
+# El error cuadrático medio entre el precio y el valor predicho es:  31635042.944639888
+
+#------------------------ Evaluacion Regresión Lineal Múltiple---------------------
+# Ajuste del modelo de regresión lineal múltiple con las características Z y el precio como variable dependiente
+lm.fit(Z, df['price'])
+
+# Cálculo del coeficiente de determinación R^2 para la regresión lineal múltiple
+print('El R-cuadrado es: ', lm.score(Z, df['price']))
+# Salida esperada: 
+# El R-cuadrado es:  0.8093562806577457
+# Esto significa que aproximadamente el 80.896% de la variación en el precio está explicada por esta regresión lineal múltiple "multi_fit".
+
+# Predicción de los valores utilizando el modelo de regresión múltiple ajustado
+Y_predict_multifit = lm.predict(Z)
+
+# Cálculo del error cuadrático medio (MSE) entre los valores reales y los valores predichos usando la regresión múltiple
+print('El error cuadrático medio entre el precio y el valor predicho usando multifit es: ', \
+      mean_squared_error(df['price'], Y_predict_multifit))
+# Salida esperada:
+# El error cuadrático medio entre el precio y el valor predicho usando multifit es:  11980366.87072649
+
+#------------------------Evaluacion Ajuste Polinómico---------------------
+from sklearn.metrics import r2_score
+
+# Cálculo del coeficiente de determinación R^2 para el ajuste polinómico
+r_squared = r2_score(y, p(x))
+print('El valor de R-cuadrado es: ', r_squared)
+# Salida esperada:
+# El valor de R-cuadrado es:  0.674194666390652
+# Esto significa que aproximadamente el 67.419% de la variación en el precio está explicada por este ajuste polinómico.
+
+# Cálculo del error cuadrático medio (MSE) entre los valores reales y los valores predichos usando el ajuste polinómico
+mean_squared_error(df['price'], p(x))
+# Salida esperada:
+# 20474146.426361218
+
+#-----------------------------------ELECCION DE LOS 3 MODELOS REALIZADOS-----------------------
+#Se elige el que tiene menor MSE y mayor R2
+# Evaluación de Modelos de Regresión
+
+# 1. Regresión Lineal Simple (Simple Linear Regression):
+# Usando 'Highway-mpg' como variable predictora del precio.
+
+# R-cuadrado (R-squared)
+r2_simple = 0.4966
+print(f'R-cuadrado (Simple Linear Regression): {r2_simple:.4f}')
+# Interpretación: Aproximadamente el 49.66% de la variación del precio está explicada por el modelo de regresión lineal simple.
+
+# Error Cuadrático Medio (MSE)
+mse_simple = 3.16e7
+print(f'Error Cuadrático Medio (Simple Linear Regression): {mse_simple:.2e}')
+# Interpretación: El error cuadrático medio indica que, en promedio, las predicciones del modelo se desvían de los valores reales en aproximadamente 31.6 millones de unidades cuadradas.
+
+# 2. Regresión Lineal Múltiple (Multiple Linear Regression):
+# Usando 'Horsepower', 'Curb-weight', 'Engine-size', y 'Highway-mpg' como variables predictoras del precio.
+
+# R-cuadrado (R-squared)
+r2_multiple = 0.8090
+print(f'R-cuadrado (Multiple Linear Regression): {r2_multiple:.4f}')
+# Interpretación: Aproximadamente el 80.90% de la variación del precio está explicada por el modelo de regresión lineal múltiple.
+
+# Error Cuadrático Medio (MSE)
+mse_multiple = 1.2e7
+print(f'Error Cuadrático Medio (Multiple Linear Regression): {mse_multiple:.2e}')
+# Interpretación: El error cuadrático medio es menor en comparación con el modelo de regresión lineal simple, indicando mejor precisión en las predicciones.
+
+# 3. Ajuste Polinómico (Polynomial Fit):
+# Usando 'Highway-mpg' como variable predictora del precio.
+
+# R-cuadrado (R-squared)
+r2_polynomial = 0.6742
+print(f'R-cuadrado (Polynomial Fit): {r2_polynomial:.4f}')
+# Interpretación: Aproximadamente el 67.42% de la variación del precio está explicada por el modelo polinómico.
+
+# Error Cuadrático Medio (MSE)
+mse_polynomial = 2.05e7
+print(f'Error Cuadrático Medio (Polynomial Fit): {mse_polynomial:.2e}')
+# Interpretación: El error cuadrático medio es mayor que el del modelo de regresión lineal múltiple, indicando menor precisión en las predicciones.
+
+# Comparación entre Modelos de Regresión Lineal Simple (SLR) y Regresión Lineal Múltiple (MLR):
+# Comparando estos tres modelos, se concluye que el modelo de regresión lineal múltiple (MLR) es el mejor para predecir el precio a partir de nuestro conjunto de datos.
+# Este resultado tiene sentido dado que contamos con 27 variables en total y sabemos que más de una de esas variables puede ser un predictor potencial del precio final del automóvil.

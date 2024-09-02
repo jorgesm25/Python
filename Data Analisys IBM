@@ -465,3 +465,6 @@ BestRR = Grid1.best_estimator_  # Se obtiene el modelo Ridge con el mejor valor 
 # 6. Evaluación del modelo en el conjunto de prueba
 BestRR.score(x_test[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']], y_test)  
 # Se calcula e imprime el coeficiente de determinación (R^2) del mejor modelo en los datos de prueba
+
+print(Grid1.best_params_)  # Imprime el mejor valor de alpha encontrado
+

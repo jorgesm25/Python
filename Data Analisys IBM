@@ -1,3 +1,25 @@
+#-----------------------------ENCABEZADOS----------------
+headers = ["age", "gender", "bmi", "no_of_children", "smoker", "region", "charges"]
+df.columns = headers
+#---------------------------------------REEMPLAZAR VALORES NULOS-----------
+df.replace("?", np.nan, inplace = True)
+# smoker is a categorical attribute, replace with most frequent entry
+is_smoker = df['smoker'].value_counts().idxmax()
+df["smoker"].replace(np.nan, is_smoker, inplace=True)
+
+# age is a continuous variable, replace with mean age
+mean_age = df['age'].astype('float').mean(axis=0)
+df["age"].replace(np.nan, mean_age, inplace=True)
+
+# Update data types
+df[["age","smoker"]] = df[["age","smoker"]].astype("int")
+
+print(df.info())
+#-------------------------------------REDONDERAR---------------
+df[["charges"]] = np.round(df[["charges"]],2)
+print(df.head())
+#--------------------------------------
+
 import piplite
 await piplite.install('seaborn')
 
@@ -397,3 +419,49 @@ print(f'Error Cuadrático Medio (Polynomial Fit): {mse_polynomial:.2e}')
 # Comparación entre Modelos de Regresión Lineal Simple (SLR) y Regresión Lineal Múltiple (MLR):
 # Comparando estos tres modelos, se concluye que el modelo de regresión lineal múltiple (MLR) es el mejor para predecir el precio a partir de nuestro conjunto de datos.
 # Este resultado tiene sentido dado que contamos con 27 variables en total y sabemos que más de una de esas variables puede ser un predictor potencial del precio final del automóvil.
+
+#-----------------------------------------------------------RIDGE MODEL------------------------------
+# Código que implementa y evalúa un modelo de regresión Ridge en datos simples y luego en datos transformados polinómicamente.
+
+# 1. Definición y entrenamiento del modelo Ridge
+RidgeModel = Ridge(alpha=0.1)  # Se crea un modelo de regresión Ridge con un parámetro de regularización alpha=0.1
+RidgeModel.fit(x_train, y_train)  # El modelo se ajusta a los datos de entrenamiento
+
+# 2. Predicción y evaluación en datos originales
+yhat = RidgeModel.predict(x_test)  # Se realizan predicciones sobre el conjunto de prueba
+print(r2_score(y_test, yhat))  # Se imprime el coeficiente de determinación (R^2) para evaluar el modelo
+# Este R^2 mide qué tan bien el modelo ajusta los datos de prueba, con un valor cercano a 1 indicando un buen ajuste.
+
+# 3. Transformación polinómica de los datos
+pr = PolynomialFeatures(degree=2)  # Se crea un transformador polinómico de segundo grado
+x_train_pr = pr.fit_transform(x_train)  # Se transforman los datos de entrenamiento a características polinómicas
+x_test_pr = pr.fit_transform(x_test)  # Se transforman los datos de prueba a características polinómicas
+
+# 4. Entrenamiento y evaluación del modelo Ridge en datos polinómicos
+RidgeModel.fit(x_train_pr, y_train)  # El modelo Ridge se entrena nuevamente, pero ahora con las características polinómicas
+y_hat = RidgeModel.predict(x_test_pr)  # Se realizan predicciones sobre el conjunto de prueba transformado
+print(r2_score(y_test, y_hat))  # Se imprime el coeficiente de determinación (R^2) para evaluar el modelo en los datos polinómicos
+# Este R^2 indica el rendimiento del modelo en datos transformados, lo que puede ayudar a entender si la transformación mejora el ajuste.
+#----------------------------------------BUSQUEDA EN MALLA (Grid Search) para encontrar el mejor parámetro de regularización (alpha) para un modelo de regresión Ridge.
+#Sirve para más tipos de modelos e hyperparametros
+from sklearn.model_selection import GridSearchCV  # Importa la clase GridSearchCV para realizar la búsqueda en malla
+
+# 1. Definición de los parámetros a buscar en el modelo Ridge
+parameters1 = [{'alpha': [0.001, 0.1, 1, 10, 100, 1000, 10000, 100000, 100000]}]  # Lista de valores para el parámetro alpha
+
+# 2. Creación del modelo Ridge
+RR = Ridge()  # Se crea un modelo de regresión Ridge sin especificar alpha, ya que será determinado por GridSearch
+
+# 3. Configuración de la búsqueda en malla
+Grid1 = GridSearchCV(RR, parameters1, cv=4)  # Se configura la búsqueda en malla con validación cruzada de 4 pliegues
+
+# 4. Entrenamiento del modelo utilizando la búsqueda en malla
+Grid1.fit(x_data[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']], y_data)  
+# Se ajusta el modelo a los datos de entrenamiento, buscando el mejor valor de alpha
+
+# 5. Obtención del mejor estimador
+BestRR = Grid1.best_estimator_  # Se obtiene el modelo Ridge con el mejor valor de alpha encontrado por la búsqueda en malla
+
+# 6. Evaluación del modelo en el conjunto de prueba
+BestRR.score(x_test[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']], y_test)  
+# Se calcula e imprime el coeficiente de determinación (R^2) del mejor modelo en los datos de prueba

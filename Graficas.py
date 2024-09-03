@@ -114,6 +114,19 @@ plt.legend(labels=df_continents.index, loc='upper left')
 
 
 plt.show()
+#-------------------------Grafica de pastel con una porcion resaltada------------
+fig,ax=plt.subplots()
+
+#Pie on immigrants
+ax.pie(total_immigrants[0:5], labels=years[0:5], 
+       colors = ['gold','blue','lightgreen','coral','cyan'],
+       autopct='%1.1f%%',explode = [0,0,0,0,0.1]) #using explode to highlight the lowest 
+
+ax.set_aspect('equal')  # Ensure pie is drawn as a circle
+
+plt.title('Distribution of Immigrants from 1980 to 1985')
+#plt.legend(years[0:5]), include legend, if you donot want to pass the labels
+plt.show()
 #--------------------------Grafica de pastel por universidad---------------------
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -361,3 +374,79 @@ ax1 = df_can_t.plot(kind='scatter',
 ax0.set_ylabel('Number of Immigrants')
 ax0.set_title('Immigration from Brazil and Argentina from 1980 to 2013')
 ax0.legend(['Brazil', 'Argentina'], loc='upper left', fontsize='x-large')
+#----------------------------------------WORD CLOUDS-----------------------------
+# Importa el paquete WordCloud y el conjunto de palabras vacías (stopwords)
+from wordcloud import WordCloud, STOPWORDS
+
+print('¡Wordcloud importado!')
+
+import urllib
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
+
+# Abre el archivo y léelo en una variable llamada alice_novel
+alice_novel = urllib.request.urlopen('https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DV0101EN-SkillsNetwork/Data%20Files/alice_novel.txt').read().decode("utf-8")
+
+# Crea un conjunto de palabras vacías a partir del conjunto predefinido de STOPWORDS
+stopwords = set(STOPWORDS)
+
+# Si obtienes un error de atributo al generar la nube de palabras, actualiza Pillow y numpy usando el siguiente código
+%pip install --upgrade Pillow 
+%pip install --upgrade numpy
+
+# Crea un objeto WordCloud
+alice_wc = WordCloud()
+
+# Genera la nube de palabras
+alice_wc.generate(alice_novel)
+
+# Muestra la nube de palabras
+plt.imshow(alice_wc, interpolation='bilinear')
+plt.axis('off')  # Oculta los ejes
+plt.show()
+
+# Configura el tamaño de la figura para la visualización
+fig = plt.figure(figsize=(14, 18))
+
+# Muestra nuevamente la nube de palabras con el tamaño de figura configurado
+plt.imshow(alice_wc, interpolation='bilinear')
+plt.axis('off')  # Oculta los ejes
+plt.show()
+
+# Añade la palabra 'said' al conjunto de palabras vacías
+stopwords.add('said')
+
+# Regenera la nube de palabras excluyendo la nueva palabra vacía
+alice_wc.generate(alice_novel)
+
+# Muestra la nube de palabras con la palabra 'said' excluida
+fig = plt.figure(figsize=(14, 18))
+
+plt.imshow(alice_wc, interpolation='bilinear')
+plt.axis('off')  # Oculta los ejes
+plt.show()
+
+# Guarda una máscara de imagen de la nube de palabras en la variable alice_mask
+alice_mask = np.array(Image.open(urllib.request.urlopen('https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DV0101EN-SkillsNetwork/labs/Module%204/images/alice_mask.png')))
+
+# Configura el tamaño de la figura para la visualización de la máscara
+fig = plt.figure(figsize=(14, 18))
+
+# Muestra la máscara de la nube de palabras en escala de grises
+plt.imshow(alice_mask, cmap=plt.cm.gray, interpolation='bilinear')
+plt.axis('off')  # Oculta los ejes
+plt.show()
+
+# Crea un nuevo objeto WordCloud con fondo blanco, máximo de 2000 palabras, máscara de imagen y palabras vacías
+alice_wc = WordCloud(background_color='white', max_words=2000, mask=alice_mask, stopwords=stopwords)
+
+# Genera la nube de palabras con la nueva configuración
+alice_wc.generate(alice_novel)
+
+# Muestra la nube de palabras con la configuración nueva
+fig = plt.figure(figsize=(14, 18))
+
+plt.imshow(alice_wc, interpolation='bilinear')
+plt.axis('off')  # Oculta los ejes
+plt.show()

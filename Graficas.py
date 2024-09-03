@@ -570,7 +570,10 @@ df_can = pd.read_csv('https://cf-courses-data.s3.us.cloud-object-storage.appdoma
 
 print('¡Datos descargados y leídos en un DataFrame!')
 
-# Para crear un mapa coroplético (Choropleth), necesitamos un archivo GeoJSON que defina las áreas/fronteras del estado, condado o país de nuestro interés. En este caso, como queremos crear un mapa mundial, necesitamos un archivo GeoJSON que defina las fronteras de todos los países del mundo. Por conveniencia, se proporciona este archivo, así que lo descargamos y lo nombramos como world_countries.json.
+# Para crear un mapa coroplético (Choropleth), necesitamos un archivo GeoJSON que defina las áreas/fronteras del estado, 
+#condado o país de nuestro interés. En este caso, como queremos crear un mapa mundial, necesitamos un archivo GeoJSON que 
+#defina las fronteras de todos los países del mundo. Por conveniencia, se proporciona este archivo, así que lo descargamos
+#y lo nombramos como world_countries.json.
 
 # Descargar el archivo GeoJSON de los países
 ! wget --quiet https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DV0101EN-SkillsNetwork/Data%20Files/world_countries.json

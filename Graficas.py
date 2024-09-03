@@ -90,7 +90,30 @@ plt.axis('equal')  # Para asegurar que el gráfico sea un círculo
 plt.title("Distribución de Género", fontsize=16)
 
 plt.show()
+#------------------------------Grafica de pastel con etiquetas------------
+# group countries by continents and apply sum() function 
+df_continents = df_can.groupby('Continent', axis=0).sum()
 
+# note: the output of the groupby method is a `groupby' object. 
+# we can not use it further until we apply a function (eg .sum())
+print(type(df_can.groupby('Continent', axis=0)))
+
+df_continents.head()
+
+# autopct create %, start angle represent starting point
+df_continents['Total'].plot(kind='pie',
+                            figsize=(5, 6),
+                            autopct='%1.1f%%', # add in percentages
+                            startangle=90,     # start angle 90° (Africa)
+                            shadow=True,       # add shadow      
+                            )
+
+plt.title('Immigration to Canada by Continent [1980 - 2013]')
+plt.axis('equal') # Sets the pie chart to look like a circle.
+plt.legend(labels=df_continents.index, loc='upper left') 
+
+
+plt.show()
 #--------------------------Grafica de pastel por universidad---------------------
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -291,3 +314,50 @@ plt.annotate('2008 - 2011 Financial Crisis',  # text to display
              )
 
 plt.show()
+
+#------------------------------------Graficos de burbujas -----------------------------------
+# transposed dataframe
+df_can_t = df_can[years].transpose()
+
+# cast the Years (the index) to type int
+df_can_t.index = map(int, df_can_t.index)
+
+# let's label the index. This will automatically be the column name when we reset the index
+df_can_t.index.name = 'Year'
+
+# reset index to bring the Year in as a column
+df_can_t.reset_index(inplace=True)
+
+# view the changes
+df_can_t.head()
+
+# normalize Brazil data
+norm_brazil = (df_can_t['Brazil'] - df_can_t['Brazil'].min()) / (df_can_t['Brazil'].max() - df_can_t['Brazil'].min())
+
+# normalize Argentina data
+norm_argentina = (df_can_t['Argentina'] - df_can_t['Argentina'].min()) / (df_can_t['Argentina'].max() - df_can_t['Argentina'].min())
+
+# Brazil
+ax0 = df_can_t.plot(kind='scatter',
+                    x='Year',
+                    y='Brazil',
+                    figsize=(14, 8),
+                    alpha=0.5,  # transparency
+                    color='green',
+                    s=norm_brazil * 2000 + 10,  # pass in weights 
+                    xlim=(1975, 2015)
+                    )
+
+# Argentina
+ax1 = df_can_t.plot(kind='scatter',
+                    x='Year',
+                    y='Argentina',
+                    alpha=0.5,
+                    color="blue",
+                    s=norm_argentina * 2000 + 10,
+                    ax=ax0
+                    )
+
+ax0.set_ylabel('Number of Immigrants')
+ax0.set_title('Immigration from Brazil and Argentina from 1980 to 2013')
+ax0.legend(['Brazil', 'Argentina'], loc='upper left', fontsize='x-large')

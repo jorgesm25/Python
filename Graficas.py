@@ -236,3 +236,58 @@ config = {
     'editable': False,       
 }
 iplot(fig)
+#-----------------------------------------Grafica de áreas -----------------------------------------
+df_can.sort_values(['Total'], ascending=False, axis=0, inplace=True)
+
+# get the top 5 entries
+df_top5 = df_can.head()
+
+# transpose the dataframe
+df_top5 = df_top5[years].transpose()
+
+df_top5.head()
+
+# Cambiamos los valores del índice de df_top5 a tipo entero para poder graficar
+df_top5.index = df_top5.index.map(int)
+
+# Graficamos el DataFrame utilizando un gráfico de área no apilado con un tamaño de figura de 20x10
+df_top5.plot(kind='area', 
+             stacked=False, 
+             figsize=(20, 10))  # se pasa una tupla (x, y) para el tamaño
+
+# Establecemos el título del gráfico y las etiquetas de los ejes
+plt.title('Tendencia de Inmigración de los 5 Principales Países')
+plt.ylabel('Número de Inmigrantes')
+plt.xlabel('Años')
+
+# Mostramos el gráfico
+plt.show()
+
+#----------------------------------------Grafica de barras con anotaciones------
+# step 1: get the data
+df_iceland = df_can.loc['Iceland', years]
+df_iceland.head()
+
+df_iceland.plot(kind='bar', figsize=(10, 6), rot=90)
+
+plt.xlabel('Year')
+plt.ylabel('Number of Immigrants')
+plt.title('Icelandic Immigrants to Canada from 1980 to 2013')
+
+# Annotate arrow
+plt.annotate('',  # s: str. will leave it blank for no text
+             xy=(32, 70),  # place head of the arrow at point (year 2012 , pop 70)
+             xytext=(28, 20),  # place base of the arrow at point (year 2008 , pop 20)
+             xycoords='data',  # will use the coordinate system of the object being annotated
+             arrowprops=dict(arrowstyle='->', connectionstyle='arc3', color='blue', lw=2)
+             )
+
+# Annotate Text
+plt.annotate('2008 - 2011 Financial Crisis',  # text to display
+             xy=(28, 30),  # start the text at at point (year 2008 , pop 30)
+             rotation=72.5,  # based on trial and error to match the arrow
+             va='bottom',  # want the text to be vertically 'bottom' aligned
+             ha='left',  # want the text to be horizontally 'left' algned.
+             )
+
+plt.show()

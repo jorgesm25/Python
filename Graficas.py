@@ -82,6 +82,34 @@ plt.legend(handles, df['Pais'].unique(), title='Pais')
 # Mostrar el gráfico
 plt.show()
 
+#--------------------------Grafica de pastel interactiva----------------------
+# revisar https://plotly.com/python/plotly-express/
+import pandas as pd
+import plotly.express as px
+
+# Crear un conjunto de datos de ejemplo
+data = {
+    'Violencia': ['Física', 'Física', 'Física', 'Psicológica', 'Psicológica', 'Psicológica', 'Sexual', 'Sexual', 'Sexual'],
+    'Estado': ['Morelos', 'CDMX', 'Guerrero', 'Morelos', 'CDMX', 'Guerrero', 'Morelos', 'CDMX', 'Guerrero'],
+    'Proporción': [2, 66, 25, 5, 20, 50, 10, 75, 55]
+}
+
+df = pd.DataFrame(data)
+
+# Crear el gráfico sunburst con colores personalizados
+fig = px.sunburst(df, 
+                  path=['Violencia', 'Estado'], 
+                  values='Proporción', 
+                  color='Proporción',
+                  color_continuous_scale=[
+                      (0, 'green'),      # Valor bajo: verde
+                      (0.5, 'yellow'),   # Valor medio: amarillo
+                      (1, 'red')         # Valor alto: rojo
+                  ])
+
+# Mostrar el gráfico
+fig.show()
+
 #--------------------------Grafica de pastel----------------------
 plt.figure(figsize=(8, 8))
 plt.pie(df['Count'], labels=df['Género'], autopct='%1.1f%%', startangle=90, colors=['blue', 'pink'])
@@ -601,3 +629,5 @@ world_map.choropleth(
 
 # Mostrar el mapa generado
 world_map
+###################################################
+#Revisar https://dash.gallery/Portal/

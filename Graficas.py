@@ -450,3 +450,151 @@ fig = plt.figure(figsize=(14, 18))
 plt.imshow(alice_wc, interpolation='bilinear')
 plt.axis('off')  # Oculta los ejes
 plt.show()
+#-------------------------------- MAPAS GEOGRAFICO CON ETIQUETAS-------------
+   import numpy as np  # útil para muchos cálculos científicos en Python
+import pandas as pd # biblioteca principal para estructuras de datos
+
+# Instalación e importación de la biblioteca folium para visualización de mapas
+#!pip3 install folium==0.5.0
+import folium
+
+print('¡Folium instalado e importado!')
+
+# Definir las coordenadas de latitud y longitud de México
+mexico_latitude = 23.6345 
+mexico_longitude = -102.5528
+
+# Definir el mapa centrado en México con un nivel de zoom mayor
+mexico_map = folium.Map(location=[mexico_latitude, mexico_longitude], zoom_start=4)
+
+# Mostrar el mapa de México
+mexico_map
+
+# Crear un mapa de Cartodb dark_matter centrado en Canadá
+world_map = folium.Map(location=[56.130, -106.35], zoom_start=4, tiles='Cartodb dark_matter')
+
+# Mostrar el mapa del mundo centrado en Canadá
+world_map
+
+# Crear y mostrar el mapa de San Francisco
+sanfran_map = folium.Map(location=[latitude, longitude], zoom_start=12)
+
+# Mostrar el mapa de San Francisco
+sanfran_map
+
+# Instanciar un grupo de características para los incidentes en el dataframe
+incidents = folium.map.FeatureGroup()
+
+# Bucle para agregar los 100 crímenes al grupo de características de incidentes
+for lat, lng, in zip(df_incidents.Y, df_incidents.X):
+    incidents.add_child(
+        folium.vector_layers.CircleMarker(
+            [lat, lng],
+            radius=5, # definir el tamaño de los marcadores circulares
+            color='yellow',
+            fill=True,
+            fill_color='blue',
+            fill_opacity=0.6
+        )
+    )
+
+# Agregar incidentes al mapa
+sanfran_map.add_child(incidents)
+
+# Instanciar un grupo de características para los incidentes en el dataframe (repetido)
+incidents = folium.map.FeatureGroup()
+
+# Bucle para agregar los 100 crímenes al grupo de características de incidentes (repetido)
+for lat, lng, in zip(df_incidents.Y, df_incidents.X):
+    incidents.add_child(
+        folium.vector_layers.CircleMarker(
+            [lat, lng],
+            radius=5, # definir el tamaño de los marcadores circulares
+            color='yellow',
+            fill=True,
+            fill_color='blue',
+            fill_opacity=0.6
+        )
+    )
+
+# Agregar texto emergente a cada marcador en el mapa
+latitudes = list(df_incidents.Y)
+longitudes = list(df_incidents.X)
+labels = list(df_incidents.Category)
+
+for lat, lng, label in zip(latitudes, longitudes, labels):
+    folium.Marker([lat, lng], popup=label).add_to(sanfran_map)    
+    
+# Agregar incidentes al mapa
+sanfran_map.add_child(incidents)
+
+# Crear y mostrar el mapa de San Francisco
+sanfran_map = folium.Map(location=[latitude, longitude], zoom_start=12)
+
+# Bucle para agregar los 100 crímenes al mapa con marcadores circulares
+for lat, lng, label in zip(df_incidents.Y, df_incidents.X, df_incidents.Category):
+    folium.vector_layers.CircleMarker(
+        [lat, lng],
+        radius=5, # definir el tamaño de los marcadores circulares
+        color='yellow',
+        fill=True,
+        popup=label,
+        fill_color='blue',
+        fill_opacity=0.6
+    ).add_to(sanfran_map)
+
+# Mostrar el mapa de San Francisco
+sanfran_map
+
+from folium import plugins
+
+# Reiniciar con una copia limpia del mapa de San Francisco
+sanfran_map = folium.Map(location=[latitude, longitude], zoom_start=12)
+
+# Instanciar un objeto de clúster de marcadores para los incidentes en el dataframe
+incidents = plugins.MarkerCluster().add_to(sanfran_map)
+
+# Bucle para agregar cada punto de datos al clúster de marcadores
+for lat, lng, label, in zip(df_incidents.Y, df_incidents.X, df_incidents.Category):
+    folium.Marker(
+        location=[lat, lng],
+        icon=None,
+        popup=label,
+    ).add_to(incidents)
+
+# Mostrar el mapa final con los incidentes agrupados
+sanfran_map
+#----------------------------- MAPAS GEOGRAFICOS CON COLORES (INTENSIDAD)Choropleth map------------------
+    # Importamos la biblioteca pandas para el manejo de datos
+df_can = pd.read_csv('https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DV0101EN-SkillsNetwork/Data%20Files/Canada.csv')
+
+print('¡Datos descargados y leídos en un DataFrame!')
+
+# Para crear un mapa coroplético (Choropleth), necesitamos un archivo GeoJSON que defina las áreas/fronteras del estado, condado o país de nuestro interés. En este caso, como queremos crear un mapa mundial, necesitamos un archivo GeoJSON que defina las fronteras de todos los países del mundo. Por conveniencia, se proporciona este archivo, así que lo descargamos y lo nombramos como world_countries.json.
+
+# Descargar el archivo GeoJSON de los países
+! wget --quiet https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DV0101EN-SkillsNetwork/Data%20Files/world_countries.json
+    
+print('¡Archivo GeoJSON descargado!')
+
+# Ruta al archivo GeoJSON de los países del mundo
+world_geo = r'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DV0101EN-SkillsNetwork/Data%20Files/world_countries.json'
+
+# Crear un mapa simple del mundo centrado en [0, 0] con un nivel de zoom inicial de 2
+world_map = folium.Map(location=[0, 0], zoom_start=2)
+
+# Generar un mapa coroplético utilizando la inmigración total de cada país a Canadá desde 1980 hasta 2013
+world_map.choropleth(
+    geo_data=world_geo,  # Archivo GeoJSON que define las fronteras de los países
+    data=df_can,         # DataFrame con los datos de inmigración
+    columns=['Country', 'Total'],  # Columnas que se usarán para el mapeo
+    key_on='feature.properties.name',  # Vinculación de los datos con las propiedades del GeoJSON
+    fill_color='YlOrRd',  # Paleta de colores del mapa
+    fill_opacity=0.7,     # Opacidad del color de relleno
+    line_opacity=0.2,     # Opacidad del color de las líneas de frontera
+    legend_name='Inmigración a Canadá',  # Nombre de la leyenda del mapa
+    reset=True            # Reiniciar para asegurar que no se acumulen datos previos
+)
+
+# Mostrar el mapa generado
+world_map

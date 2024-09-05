@@ -1,1 +1,90 @@
+#########################################################################################################
+#                                            K-Nearest Neighbors                                        #
+#########################################################################################################
+!pip install scikit-learn==0.23.1
+# Importar las bibliotecas necesarias
+import numpy as np  # Biblioteca para operaciones numéricas
+import matplotlib.pyplot as plt  # Biblioteca para visualización de gráficos
+import pandas as pd  # Biblioteca para manipulación de datos
+from sklearn import preprocessing  # Módulo de preprocesamiento de scikit-learn
+from sklearn.model_selection import train_test_split  # Función para dividir el dataset
+from sklearn.neighbors import KNeighborsClassifier  # Clasificador K-Nearest Neighbors (KNN)
+from sklearn import metrics  # Módulo para métricas de evaluación
+%matplotlib inline  # Configuración para mostrar gráficos en el cuaderno Jupyter
 
+# Extraer las características (features) del DataFrame
+X = df[['region', 'tenure', 'age', 'marital', 'address', 'income', 'ed', 'employ', 'retire', 'gender', 'reside']].values
+# Mostrar las primeras 5 filas de las características
+X[0:5]
+
+# Extraer la variable objetivo (target) del DataFrame
+y = df['custcat'].values
+# Mostrar las primeras 5 filas de la variable objetivo
+y[0:5]
+
+# Escalar las características usando StandardScaler para que tengan media 0 y desviación estándar 1
+X = preprocessing.StandardScaler().fit(X).transform(X.astype(float))
+# Mostrar las primeras 5 filas de las características escaladas
+X[0:5]
+
+# Dividir el dataset en conjuntos de entrenamiento y prueba (80% entrenamiento, 20% prueba)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
+# Mostrar las dimensiones de los conjuntos de entrenamiento y prueba
+print('Train set:', X_train.shape, y_train.shape)
+print('Test set:', X_test.shape, y_test.shape)
+
+# Crear un clasificador K-Nearest Neighbors con k=4 vecinos
+k = 4
+neigh = KNeighborsClassifier(n_neighbors=k).fit(X_train, y_train)
+# Mostrar el clasificador entrenado
+neigh
+
+# Hacer predicciones sobre el conjunto de prueba
+yhat = neigh.predict(X_test)
+# Mostrar las primeras 5 predicciones
+yhat[0:5]
+
+# Evaluar la precisión del clasificador en los conjuntos de entrenamiento y prueba
+print("Train set Accuracy: ", metrics.accuracy_score(y_train, neigh.predict(X_train)))
+print("Test set Accuracy: ", metrics.accuracy_score(y_test, yhat))
+#------------------------------- ELEGIR LA MEJOR OPCIÓN PARA K ------------------------
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import metrics
+
+# Número máximo de k vecinos a probar
+Ks = 10
+
+# Inicializar arrays para almacenar la precisión media y la desviación estándar
+mean_acc = np.zeros((Ks-1))
+std_acc = np.zeros((Ks-1))
+
+# Bucle para probar diferentes valores de K (número de vecinos)
+for n in range(1, Ks):
+    
+    # Entrenar el modelo y realizar predicciones
+    neigh = KNeighborsClassifier(n_neighbors=n).fit(X_train, y_train)
+    yhat = neigh.predict(X_test)
+    
+    # Calcular la precisión y almacenar en el array correspondiente
+    mean_acc[n-1] = metrics.accuracy_score(y_test, yhat)
+    
+    # Calcular la desviación estándar de la precisión
+    std_acc[n-1] = np.std(yhat == y_test) / np.sqrt(yhat.shape[0])
+
+# Mostrar la precisión media para cada valor de K
+print(mean_acc)
+
+# Crear un gráfico para visualizar la precisión en función del número de vecinos (K)
+plt.plot(range(1, Ks), mean_acc, 'g')
+plt.fill_between(range(1, Ks), mean_acc - 1 * std_acc, mean_acc + 1 * std_acc, alpha=0.10)
+plt.fill_between(range(1, Ks), mean_acc - 3 * std_acc, mean_acc + 3 * std_acc, alpha=0.10, color="green")
+plt.legend(('Precisión', '+/- 1xstd', '+/- 3xstd'))
+plt.ylabel('Precisión')
+plt.xlabel('Número de Vecinos (K)')
+plt.tight_layout()
+plt.show()
+
+# Imprimir la mejor precisión y el valor de K correspondiente
+print("La mejor precisión fue", mean_acc.max(), "con k =", mean_acc.argmax() + 1)

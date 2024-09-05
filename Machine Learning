@@ -88,3 +88,117 @@ plt.show()
 
 # Imprimir la mejor precisión y el valor de K correspondiente
 print("La mejor precisión fue", mean_acc.max(), "con k =", mean_acc.argmax() + 1)
+#########################################################################################################
+#                                            Arboles de desicion                                        #
+#########################################################################################################
+from __future__ import print_function
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import normalize, StandardScaler
+from sklearn.utils.class_weight import compute_sample_weight
+from sklearn.metrics import roc_auc_score
+import time
+import warnings
+warnings.filterwarnings('ignore')
+
+# Estandarizar las características eliminando la media y escalando a una varianza unitaria
+big_raw_data.iloc[:, 1:30] = StandardScaler().fit_transform(big_raw_data.iloc[:, 1:30])
+data_matrix = big_raw_data.values
+
+# X: matriz de características (para este análisis, excluimos la variable Time del conjunto de datos)
+X = data_matrix[:, 1:30]
+
+# Dividir los datos en conjuntos de entrenamiento y prueba
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)       
+print('X_train.shape=', X_train.shape, 'Y_train.shape=', y_train.shape)
+print('X_test.shape=', X_test.shape, 'Y_test.shape=', y_test.shape)
+
+# Calcular los pesos de muestra para ser utilizados en el entrenamiento, 
+# teniendo en cuenta el desbalance de clases presente en este conjunto de datos
+w_train = compute_sample_weight('balanced', y_train)
+
+# Importar el modelo de Árbol de Decisión de scikit-learn
+from sklearn.tree import DecisionTreeClassifier
+
+# Para obtener resultados reproducibles en múltiples llamadas a funciones, 
+# establecer random_state a un valor entero dado
+sklearn_dt = DecisionTreeClassifier(max_depth=4, random_state=35)
+
+# Entrenar un clasificador de Árbol de Decisión utilizando scikit-learn
+sklearn_dt.fit(X_train, y_train, sample_weight=w_train)
+
+
+# Realizar predicciones de probabilidad utilizando el clasificador de Árbol de Decisión
+sklearn_pred = sklearn_dt.predict_proba(X_test)[:, 1]
+
+# Evaluar el área bajo la curva de características operativas del receptor (ROC-AUC) 
+# a partir de las predicciones
+sklearn_roc_auc = roc_auc_score(y_test, sklearn_pred)
+print('[Scikit-Learn] ROC-AUC score : {0:.3f}'.format(sklearn_roc_auc))
+#--------------------------------ARBOL USANDO SNAP ML--------------------------
+# Calcular los pesos de muestra para ser utilizados en el entrenamiento,
+# teniendo en cuenta el desbalance de clases presente en este conjunto de datos
+w_train = compute_sample_weight('balanced', y_train)
+
+# Importar el modelo de Árbol de Decisión de Snap ML
+from snapml import DecisionTreeClassifier
+
+# Snap ML ofrece entrenamiento de árboles de decisión en CPU/GPU con múltiples hilos
+# Para utilizar la GPU, establece el parámetro use_gpu a True
+# snapml_dt = DecisionTreeClassifier(max_depth=4, random_state=45, use_gpu=True)
+
+# Para establecer el número de hilos de CPU utilizados durante el entrenamiento, 
+# establece el parámetro n_jobs
+# Para obtener resultados reproducibles en múltiples llamadas a funciones, 
+# establecer random_state a un valor entero dado
+snapml_dt = DecisionTreeClassifier(max_depth=4, random_state=45, n_jobs=4)
+
+# Entrenar un modelo de Árbol de Decisión utilizando Snap ML
+snapml_dt.fit(X_train, y_train, sample_weight=w_train)
+snapml_pred = snapml_dt.predict_proba(X_test)[:,1]
+
+snapml_roc_auc = roc_auc_score(y_test, snapml_pred)   
+print('[Snap ML] ROC-AUC score : {0:.3f}'.format(snapml_roc_auc))
+# y: vector de etiquetas
+y = data_matrix[:, 30]
+##
+
+# Normalización de datos
+X = normalize(X, norm="l1")
+
+# Imprimir la forma de la matriz de características y el vector de etiquetas
+print('X.shape=', X.shape, 'y.shape=', y.shape)
+#########################################################################################################
+#                                            Support Vector Machine                                     #
+#########################################################################################################
+from sklearn.svm import LinearSVC
+
+# Instanciar un modelo SVM de scikit-learn
+# Para indicar el desbalance de clases durante el ajuste, establece class_weight='balanced'
+# Para obtener resultados reproducibles en múltiples llamadas a funciones, 
+# establece random_state a un valor entero dado
+sklearn_svm = LinearSVC(class_weight='balanced', random_state=31, loss="hinge", fit_intercept=False)
+
+# Entrenar un modelo de Máquinas de Vectores de Soporte lineal utilizando Scikit-Learn
+sklearn_svm.fit(X_train, y_train)
+
+sklearn_pred = sklearn_svm.decision_function(X_test)
+
+# Evaluar
+acc_sklearn  = roc_auc_score(y_test, sklearn_pred)
+print("[Scikit-Learn] ROC-AUC score:   {0:.3f}".format(acc_sklearn))
+#--------------------------Arboles con snap ml---------------------------------
+snapml_svm = SupportVectorMachine(class_weight='balanced', random_state=25, n_jobs=4, fit_intercept=False)
+# print(snapml_svm.get_params())
+
+# train an SVM model using Snap ML
+model = snapml_svm.fit(X_train, y_train)
+
+snapml_pred = snapml_svm.decision_function(X_test)
+
+# evaluate accuracy on test set
+acc_snapml  = roc_auc_score(y_test, snapml_pred)
+print("[Snap ML] ROC-AUC score:   {0:.3f}".format(acc_snapml))

@@ -64,7 +64,7 @@ print(html_content[:500])
 
 # Buscar todas las etiquetas <a> (etiquetas de anclaje o enlaces) en el HTML
 links = soup.find_all('a')
-
+links = soup.find_all('table')
 # Iterar a través de la lista de enlaces encontrados y imprimir el texto que contienen
 for link in links:
     print(link.text)
